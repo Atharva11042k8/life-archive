@@ -1,0 +1,15 @@
+[build]
+  # Netlify will run npm install automatically, but we include it to be explicit.
+  command = "npm install && npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Recommended Node version for Vite
+  NODE_VERSION = "18"
+
+# Optional: if your app uses client-side routing (React Router)
+# This makes all routes serve index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
