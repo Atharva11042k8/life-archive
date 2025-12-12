@@ -1,14 +1,16 @@
 [build]
-  # Netlify will run npm install automatically, but we include it to be explicit.
+  # Netlify automatically installs dependencies, but we include it to be explicit.
   command = "npm install && npm run build"
   publish = "dist"
 
 [build.environment]
-  # Recommended Node version for Vite
+  # Match your development Node version
   NODE_VERSION = "18"
 
-# Optional: if your app uses client-side routing (React Router)
-# This makes all routes serve index.html
+  # Gemini API Key (set this in Netlify dashboard → Site settings → Environment variables)
+  GEMINI_API_KEY = ""
+
+# React / Vite SPA routing (prevents 404 on refresh)
 [[redirects]]
   from = "/*"
   to = "/index.html"
