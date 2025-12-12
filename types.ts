@@ -12,10 +12,17 @@ export interface ChartDataPoint {
   date: string;
 }
 
+export interface BucketItem {
+  id: number;
+  task: string;
+  completed: boolean;
+}
+
 export interface AppState {
   study: HoursData;
   sleep: HoursData;
   summary: SummaryData;
+  bucketList: BucketItem[];
   isLoading: boolean;
   error: string | null;
 }

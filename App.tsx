@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Header from './components/Header';
 import DailySummary from './components/DailySummary';
 import StatsChart from './components/StatsChart';
-import { fetchMonthData } from './services/dataService';
+import BucketList from './components/BucketList';
+import { fetchMonthData, fetchBucketList } from './services/dataService';
 import { AppState, DailyData } from './types';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { getDateStructure } from './utils/datePath';
@@ -12,6 +13,7 @@ const App: React.FC = () => {
     study: {},
     sleep: {},
     summary: {},
+    bucketList: [],
     isLoading: true,
     error: null,
   });
@@ -31,6 +33,7 @@ const App: React.FC = () => {
       const result = await fetchMonthData(dateStr);
       
       setData(prev => ({
+        ...prev,
         study: { ...prev.study, ...result.study },
         sleep: { ...prev.sleep, ...result.sleep },
         summary: { ...prev.summary, ...result.summary },
@@ -41,13 +44,22 @@ const App: React.FC = () => {
       setLoadedMonths(prev => new Set(prev).add(monthKey));
     } catch (err) {
       console.error(err);
-      setData(prev => ({ ...prev, isLoading: false, error: 'Failed to load data.' }));
+      setData(prev => ({ ...prev, isLoading: false, error: 'Failed to load monthly data.' }));
     }
   };
 
-  // Initial Load
+  // Initial Load (Month Data + Bucket List)
   useEffect(() => {
-    ensureMonthData(selectedDate);
+    const loadInitial = async () => {
+        try {
+            const bucketData = await fetchBucketList();
+            setData(prev => ({ ...prev, bucketList: bucketData }));
+            await ensureMonthData(selectedDate);
+        } catch (err) {
+            console.error("Initial load error", err);
+        }
+    };
+    loadInitial();
   }, []);
 
   // Fetch when date changes (if month not loaded)
@@ -75,7 +87,7 @@ const App: React.FC = () => {
     };
   }, [selectedDate, data, loadedMonths]);
 
-  if (data.error) {
+  if (data.error && data.bucketList.length === 0) { // Only show full error if bucket list also failed or critical
     return (
       <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center p-4">
         <div className="glass-card p-8 rounded-xl border-red-500/30 max-w-md w-full text-center">
@@ -136,15 +148,17 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Left Column: Daily Archive Summary */}
-          <div className="lg:col-span-4 h-[500px]">
+          {/* We make this sticky or fixed height to match visual balance, 
+              but since right side grows, let's keep it h-[500px] or make it auto */}
+          <div className="lg:col-span-4 h-[500px] lg:h-auto">
             <DailySummary date={selectedDate} data={currentDailyData} />
           </div>
 
-          {/* Right Column: Graphs */}
-          <div className="lg:col-span-8 flex flex-col gap-6 h-[500px]">
+          {/* Right Column: Graphs & Bucket List */}
+          <div className="lg:col-span-8 flex flex-col gap-6">
             
             {/* Study Graph */}
-            <div className="flex-1 h-1/2">
+            <div className="h-64">
               <StatsChart 
                 title="Study Focus" 
                 unit="hrs" 
@@ -155,7 +169,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Sleep Graph */}
-            <div className="flex-1 h-1/2">
+            <div className="h-64">
               <StatsChart 
                 title="Sleep Cycles" 
                 unit="hrs" 
@@ -164,6 +178,12 @@ const App: React.FC = () => {
                 currentDate={selectedDate}
               />
             </div>
+
+            {/* Things to do before death */}
+            <div className="min-h-[200px]">
+              <BucketList items={data.bucketList} />
+            </div>
+
           </div>
         </div>
       </div>

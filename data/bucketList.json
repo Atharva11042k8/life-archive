@@ -1,0 +1,8 @@
+[
+  { "id": 1, "task": "See the Northern Lights", "completed": false },
+  { "id": 2, "task": "Publish a research paper", "completed": true },
+  { "id": 3, "task": "Visit Japan during cherry blossom season", "completed": false },
+  { "id": 4, "task": "Learn to play the piano", "completed": false },
+  { "id": 5, "task": "Run a full marathon", "completed": true },
+  { "id": 6, "task": "Build a startup", "completed": false }
+]
